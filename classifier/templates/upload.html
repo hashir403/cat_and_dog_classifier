@@ -1,0 +1,165 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cat and Dog Classifier</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 2.5rem;
+            letter-spacing: 2px;
+        }
+
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            width: 80%;
+            max-width: 500px;
+            text-align: center;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        input[type="file"] {
+            margin-top: 10px;
+        }
+
+        .preview {
+            margin-top: 20px;
+            display: none;
+        }
+
+        .preview img {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .predict-button {
+            margin-top: 20px;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .result h3 {
+            margin: 0;
+            font-size: 1.2rem;
+            color: #333;
+        }
+
+        .result p {
+            margin-top: 10px;
+            font-size: 1rem;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Cat and Dog Classifier</h1>
+    </header>
+
+    <div class="container">
+        <h2>Upload an Image</h2>
+        <form method="POST" enctype="multipart/form-data" id="uploadForm">
+            {% csrf_token %}
+            <input type="file" name="image" accept="image/*" id="imageInput">
+            <input type="hidden" id="imageData" name="imageData">
+            <div class="preview" id="imagePreview">
+                <p>No image selected</p>
+            </div>
+            <div class="predict-button">
+                <button type="submit">Predict</button>
+            </div>
+        </form>
+
+        {% if prediction %}
+        <div class="result" id="result">
+            <h3>Prediction Result:</h3>
+            <p>The uploaded image is predicted to be a: <strong>{{ prediction }}</strong></p>
+        </div>
+        {% endif %}
+    </div>
+
+    <script>
+        const imageInput = document.getElementById('imageInput');
+        const imagePreview = document.getElementById('imagePreview');
+        const imageDataInput = document.getElementById('imageData');
+        const uploadedImage = "{{ request.POST.imageData|default:'' }}";
+
+        // Load previously uploaded image preview, if available
+        if (uploadedImage) {
+            const imgTag = `<img src="${uploadedImage}" alt="Uploaded Image">`;
+            imagePreview.innerHTML = imgTag;
+            imagePreview.style.display = 'block';
+        }
+
+        imageInput.addEventListener('change', function () {
+            const file = this.files[0];
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    imagePreview.innerHTML = `<img src="${e.target.result}" alt="Selected Image">`;
+                    imagePreview.style.display = 'block';
+                    imageDataInput.value = e.target.result; // Store image data in hidden input
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                imagePreview.innerHTML = '<p>No image selected</p>';
+                imagePreview.style.display = 'none';
+            }
+        });
+    </script>
+</body>
+</html>
